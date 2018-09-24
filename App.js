@@ -4,23 +4,44 @@ import {StyleSheet, View, FlatList, Text} from 'react-native';
 // TouchableHighlight, TouchableOpacity, TouchableWithoutFeedback
 
 
-const people = [
-  { name: 'Ana', age: 35 },
-  { name: 'Paula', age: 25},
-  { name: 'Mercedes', age: 30},
-  { name: 'James', age: 35 },
-  { name: 'Amanda', age: 25},
-  { name: 'Jamie', age: 30},
-]
-
-
 export default class App extends Component {
+
+  state = {
+    people: [],
+    refreshing: false,
+    page: 1
+  }
+
+  async componentDidMount() {
+    this.fetchData()
+  }
+  
+  fetchData = async () => {
+    this.setState({ refreshing: true})
+    try {
+      const data = await fetch(`https://swapi.co/api/people?page=${this.state.page}`)
+      const json = await data.json()
+      console.log('json: ', json)
+      this.setState({
+        people: json.results,
+        page: this.state.page + 1,
+        refreshing: false
+      })
+      this.setState({
+
+      })
+    } catch (err) {
+      console.log('error fetching data: ', err)
+
+    }
+  }
+
 
   renderItem = ({ item }) => {
     return(
       <View style= {{ padding: 15, borderBottomColor: '#ddd', borderBottomWidth: 1}}>
         <Text style= {{ fontSize: 20}}>{item.name}</Text>
-        <Text style= {{ color: 'rgba(0, 0, 0, .5)'}}>Age: {item.age}</Text>
+        <Text style= {{ color: 'rgba(0, 0, 0, .5)'}}>Gender: {item.gender}</Text>
       </View>
     )
   }
@@ -29,11 +50,14 @@ export default class App extends Component {
 
     return (
       <View style={styles.container}>
-       <FlatList
-         data= {people}
-         keyExtractor={item => item.name}
-         renderItem= {this.renderItem}
-       />
+       <Text>People:</Text>
+        <FlatList
+          onRefresh= {this.fetchData}
+          refreshing= {this.state.refreshing}
+          data= {this.state.people}
+          keyExtractor={item => item.name}
+          renderItem= {this.renderItem}
+        />
 
        
       </View>
